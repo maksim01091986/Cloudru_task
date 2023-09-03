@@ -1,0 +1,45 @@
+- name: Task №1 for Ansible 
+  hosts: all 
+  become: yes 
+
+  vars:
+    user_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          34323335343635366130303563666333373162316436383962643234633436366164643464626337
+          6632366164373830323262333835626437633237393332340a646264356137663336333161356631
+          65616261386130363034616561653838343938366361636462613036383339333638316135373933
+          3063326435623632610a333461666636313038636238366636323865666166366235346137376633
+          3335
+
+  tasks:
+  - name: Create new user and password for it #subtask 1
+    user:
+      name: cloudru
+      password: "{{ user_password | string | password_hash('sha512') }}"
+      update_password: always
+      home: /home/cloudru
+
+  - name: Allow authentication through SSH #subtask 2
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^#?PubkeyAuthentication'
+      line: "PubkeyAuthentication yes"
+    notify: Restart SSH
+
+  - name: Forbid root login through SSH #subtask 3
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^#?PermitRootLogin'
+      line: "PermitRootLogin no"
+    notify: Restart SSH
+
+  - name: Add  pub_ssh from file to 'authorized_keys' #subtask 4
+    authorized_key:
+      user: cloudru
+      state: present
+      key: "{{ lookup('file', '/home/max/Ansible/new_id_rsa.pub') }}"
+
+  handlers:
+  - name: Restart SSH
+    service: name=sshd state=restarted
+

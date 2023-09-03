@@ -1,0 +1,16 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.name }}-service
+  labels:
+    project: {{ .Values.project }}
+spec:
+  selector:
+      app: {{ .Values.name }}
+      env: {{ .Values.env }}
+  type: LoadBalancer
+  ports:
+  - name: app
+    port: {{ .Values.service.port }}
+    targetPort: {{ .Values.port }}

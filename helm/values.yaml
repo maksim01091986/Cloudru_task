@@ -1,0 +1,16 @@
+name: service
+project: task2
+env: dev
+
+image:
+  name: maximus123123/flask_app:v2
+
+replicas: 3
+
+port: 8000
+
+service:
+  port: 8000
+
+envs:
+  author: Maksim
